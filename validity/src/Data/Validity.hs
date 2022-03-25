@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -433,7 +434,17 @@ isSingleLine = not . any isLineSeparator
 instance Validity Int where
   validate = trivialValidation
 
--- | NOT trivially valid on GHC because small number types are represented using a 64bit structure underneath.
+#if __GLASGOW_HASKELL__ >= 902
+instance Validity Int8 where
+  validate = trivialValidation
+
+instance Validity Int16 where
+  validate = trivialValidation
+
+instance Validity Int32 where
+  validate = trivialValidation
+#else
+-- | NOT trivially valid on older GHC because small number types are represented using a 64bit structure underneath.
 instance Validity Int8 where
   validate (I8# i#) =
     mconcat
@@ -441,7 +452,7 @@ instance Validity Int8 where
         declare "The contained integer is greater than or equal to -2^7 = -128" $ isTrue# (i# >=# -128#)
       ]
 
--- | NOT trivially valid on GHC because small number types are represented using a 64bit structure underneath.
+-- | NOT trivially valid on older GHC because small number types are represented using a 64bit structure underneath.
 instance Validity Int16 where
   validate (I16# i#) =
     mconcat
@@ -449,14 +460,14 @@ instance Validity Int16 where
         declare "The contained integer is greater than or equal to -2^15 = -32768" $ isTrue# (i# >=# -32768#)
       ]
 
--- | NOT trivially valid on GHC because small number types are represented using a 64bit structure underneath.
+-- | NOT trivially valid on older GHC because small number types are represented using a 64bit structure underneath.
 instance Validity Int32 where
   validate (I32# i#) =
     mconcat
       [ declare "The contained integer is smaller than 2^31 = 2147483648" $ isTrue# (i# <=# 2147483647#),
         declare "The contained integer is greater than or equal to -2^31 = -2147483648" $ isTrue# (i# >=# -2147483648#)
       ]
-
+#endif
 -- | Trivially valid
 instance Validity Int64 where
   validate = trivialValidation
@@ -465,20 +476,31 @@ instance Validity Int64 where
 instance Validity Word where
   validate = trivialValidation
 
--- | NOT trivially valid on GHC because small number types are represented using a 64bit structure underneath.
+#if __GLASGOW_HASKELL__ >= 902
+instance Validity Word8 where
+  validate = trivialValidation
+
+instance Validity Word16 where
+  validate = trivialValidation
+
+instance Validity Word32 where
+  validate = trivialValidation
+#else
+-- | NOT trivially valid on older GHC because small number types are represented using a 64bit structure underneath.
 instance Validity Word8 where
   validate (W8# w#) =
     declare "The contained integer is smaller than 2^8 = 256" $ isTrue# (w# `leWord#` 255##)
 
--- | NOT trivially valid on GHC because small number types are represented using a 64bit structure underneath.
+-- | NOT trivially valid on older GHC because small number types are represented using a 64bit structure underneath.
 instance Validity Word16 where
   validate (W16# w#) =
     declare "The contained integer is smaller than 2^16 = 65536" $ isTrue# (w# `leWord#` 65535##)
 
--- | NOT trivially valid on GHC because small number types are represented using a 64bit structure underneath.
+-- | NOT trivially valid on older GHC because small number types are represented using a 64bit structure underneath.
 instance Validity Word32 where
   validate (W32# w#) =
     declare "The contained integer is smaller than 2^32 = 4294967296" $ isTrue# (w# `leWord#` 4294967295##)
+#endif
 
 -- | Trivially valid
 instance Validity Word64 where
