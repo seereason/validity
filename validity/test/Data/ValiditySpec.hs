@@ -47,6 +47,7 @@ instance Validity GeneratedValidity
 
 spec :: Spec
 spec = do
+#if __GLASGOW_HASKELL__ < 902
   describe "Small numbers" $ do
     describe "Validity Int8" $ do
       it "Says that minBound is valid" $ isValid (minBound :: Int8) `shouldBe` True
@@ -75,6 +76,7 @@ spec = do
       it "Says that minBound is valid" $ isValid (minBound :: Word32) `shouldBe` True
       it "Says that maxBound is valid" $ isValid (maxBound :: Word32) `shouldBe` True
       it "Says that Word# 4800000000 is invalid" $ isValid (W32# 4800000000##) `shouldBe` False
+#endif
   describe "Chars" $ do
     describe "Small" $ do
       describe "Validity Char" $ do
